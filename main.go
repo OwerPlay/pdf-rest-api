@@ -5,17 +5,17 @@ import (
 	"net/http"
 
 	"pdf-rest-api/config"
-	"pdf-rest-api/db"
+	"pdf-rest-api/database"
 	"pdf-rest-api/handlers"
 )
 
 func main() {
 	// Initialize Database
-	database, err := db.InitializeDatabase()
+	db, err := database.InitializeDatabase()
 	if err != nil {
 		log.Fatalf("Database initialization failed: %v", err)
 	}
-	defer database.Close()
+	defer db.Close()
 
 	// Read the port from environment variables, default to 8080
 	port := config.GetEnv("APP_PORT", "8080")
