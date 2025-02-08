@@ -6,8 +6,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 
-COPY *.go ./
-COPY .env ./
+COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /pdf-rest-api
 
