@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb_container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "3306:3306"
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      start_period: 10s
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
   app:
     build: .
     container_name: pdf-rest-api
@@ -9,3 +29,11 @@ services:
     env_file:
       - .env
     restart: always
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - app_network
+
+networks:
+  app_network:
