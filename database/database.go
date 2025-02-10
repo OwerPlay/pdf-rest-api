@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"os"
@@ -9,7 +10,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-// InitializeDatabase sets up the database and calls table creation functions
 func InitializeDatabase() (*sql.DB, error) {
 	// Read database credentials from environment variables
 	dbUser := os.Getenv("MYSQL_USER")
@@ -18,41 +18,46 @@ func InitializeDatabase() (*sql.DB, error) {
 	dbPort := "3306"
 	dbName := os.Getenv("MYSQL_DATABASE")
 
-	// Connect to MariaDB (without specifying a database initially)
+	// Connect to MariaDB
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/", dbUser, dbPassword, dbHost, dbPort)
 	db, err := sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to MariaDB: %v", err)
+		return nil, errors.New("error connecting to database")
 	}
 
 	// Create Database if not exists
 	_, err = db.Exec("CREATE DATABASE IF NOT EXISTS " + dbName)
 	if err != nil {
-		return nil, fmt.Errorf("error creating database: %v", err)
+		return nil, errors.New("error creating database: " + err.Error())
 	}
-	db.Close() // Close initial connection
+	db.Close()
 
 	// Connect to the created database
 	dsn = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", dbUser, dbPassword, dbHost, dbPort, dbName)
 	db, err = sql.Open("mysql", dsn)
 	if err != nil {
-		return nil, fmt.Errorf("error connecting to database: %v", err)
+		return nil, errors.New("error connecting to database: " + err.Error())
 	}
 
 	// Call table creation functions
 	err = CreateUserTable(db)
 	if err != nil {
-		return nil, fmt.Errorf("error creating user table: %v", err)
+		return nil, errors.New("error creating user table: " + err.Error())
 	}
 
 	err = CreateFilesTable(db)
 	if err != nil {
-		return nil, fmt.Errorf("error creating files table: %v", err)
+		return nil, errors.New("error creating files table: " + err.Error())
 	}
 
 	err = CreateUserFilesTable(db)
 	if err != nil {
-		return nil, fmt.Errorf("error creating user_files table: %v", err)
+		return nil, errors.New("error creating user_files table: " + err.Error())
+	}
+
+	err = CreateQueueTable(db)
+	if err != nil {
+		return nil, errors.New("error creating queue table: " + err.Error())
 	}
 
 	log.Println("Database and tables initialized successfully!")
