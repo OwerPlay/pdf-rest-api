@@ -13,7 +13,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Create user in database
 	userID, err := database.CreateUser(db)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Failed to create user"}`, http.StatusInternalServerError)
+		http.Error(w, `{"status":"error","message":"Failed to create user", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 
@@ -35,14 +35,14 @@ func GetUserFiles(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 
 	// Check if the user exists
 	if _, err := database.GetUser(db, userID); err != nil {
-		http.Error(w, `{"status":"error","message":"User not found"}`, http.StatusNotFound)
+		http.Error(w, `{"status":"error","message":"User not found", "details": "`+err.Error()+`"}`, http.StatusNotFound)
 		return
 	}
 
 	// Retrieve files for the user
 	userFiles, err := database.GetUserFiles(db, userID)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Failed to retrieve user files"}`, http.StatusInternalServerError)
+		http.Error(w, `{"status":"error","message":"Failed to retrieve user files", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 

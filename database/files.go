@@ -19,12 +19,13 @@ const (
 
 func CreateFilesTable(db *sql.DB) error {
 	query := `
-	CREATE TABLE IF NOT EXISTS FILES (
-		id INT AUTO_INCREMENT PRIMARY KEY,
-		status ENUM('in_queue', 'parsing', 'error', 'success', 'imported') NOT NULL,
-		parsed_file LONGBLOB,
-		file_hash VARCHAR(64) UNIQUE NOT NULL
-	);`
+    CREATE TABLE IF NOT EXISTS FILES (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        status ENUM('in_queue', 'parsing', 'error', 'success', 'imported') NOT NULL,
+        parsed_file LONGBLOB,
+        file_hash VARCHAR(64) UNIQUE NOT NULL,
+        error_message TEXT
+    );`
 	_, err := db.Exec(query)
 	if err != nil {
 		return errors.New("Error creating files table: " + err.Error())
@@ -87,17 +88,10 @@ func UpdateFileStatus(db *sql.DB, fileID int, status StatusEnum) error {
 	return nil
 }
 
-func UploadParsedFile(db *sql.DB, fileID int, parsedFile []byte) error {
-	if parsedFile == nil || len(parsedFile) == 0 {
-		_, err := db.Exec("UPDATE FILES SET status = ? WHERE id = ?", StatusError, fileID)
-		if err != nil {
-			return errors.New("Error uploading parsed file: " + err.Error())
-		}
-	} else {
-		_, err := db.Exec("UPDATE FILES SET status = ?, parsed_file = ? WHERE id = ?", StatusSuccess, parsedFile, fileID)
-		if err != nil {
-			return errors.New("Error uploading parsed file: " + err.Error())
-		}
+func UploadParsedFile(db *sql.DB, fileID int, parsedFile []byte, status string) error {
+	_, err := db.Exec("UPDATE FILES SET status = ?, parsed_file = ? WHERE id = ?", status, parsedFile, fileID)
+	if err != nil {
+		return errors.New("Error uploading parsed file: " + err.Error())
 	}
 
 	return nil

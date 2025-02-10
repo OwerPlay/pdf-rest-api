@@ -154,7 +154,7 @@ The input should be sent as `form-data` with the following key-value pair:
 [
     {
         "file_id": 3,
-        "pdf_file": "file_contents"
+        "pdf_file": "{file_contents}"
     }
 ]
 ```
@@ -172,6 +172,14 @@ The input should be sent as `form-data` with the following key-value pair:
 <details>
  <summary><code>POST</code> <code>/file/{fileId}/parsed</code>&nbsp;&nbsp;Parse server returns parsed file.</summary>
 
+#### Input Example
+```json
+{
+    "status": "success",
+    "error_message": "",
+    "parsed_file": "{file_contents}"
+}
+```
 #### Response Examples
 ##### 200
 ```json
