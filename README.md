@@ -218,4 +218,7 @@ The input should be sent as `form-data` with the following key-value pair:
 
 ## Things that could be improved upon
 - Rollback database on failed insert/delete
+- Use better file structure
+- Use interfaces
+- Unit tests
 - And more...
