@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -12,7 +13,7 @@ func CreateUserTable(db *sql.DB) error {
 	);`
 	_, err := db.Exec(query)
 	if err != nil {
-		return err
+		return errors.New("Error creating USER table: " + err.Error())
 	}
 
 	log.Println("User table created successfully!")
@@ -22,14 +23,12 @@ func CreateUserTable(db *sql.DB) error {
 func CreateUser(db *sql.DB) (int, error) {
 	result, err := db.Exec("INSERT INTO USER () VALUES ()")
 	if err != nil {
-		log.Println("Error inserting user:", err)
-		return 0, err
+		return 0, errors.New("Error inserting user: " + err.Error())
 	}
 
 	userID, err := result.LastInsertId()
 	if err != nil {
-		log.Println("Error retrieving user ID:", err)
-		return 0, err
+		return 0, errors.New("Error retrieving user ID: " + err.Error())
 	}
 
 	return int(userID), nil
@@ -39,8 +38,7 @@ func GetUser(db *sql.DB, userID string) (*string, error) {
 	var UserID *string
 	err := db.QueryRow("SELECT id FROM USER WHERE id = ?", userID).Scan(&UserID)
 	if err != nil {
-		log.Println("Error retrieving user:", err)
-		return nil, err
+		return nil, errors.New("Error retrieving user: " + err.Error())
 	}
 
 	return UserID, nil

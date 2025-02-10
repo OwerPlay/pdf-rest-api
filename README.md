@@ -52,51 +52,162 @@ erDiagram
 > |`imported`| User had imported file into main application. |
 
 
-## Requests for parser server
+## Requests
 <details>
- <summary><code>GET</code> <code><b>/</b></code> <code>queue</code>&nbsp;&nbsp;&nbsp;&nbsp;Gets a new file from queue</summary>
+ <summary><code>POST</code> <code>/user/create</code>&nbsp;&nbsp;Creates a new user and returns id.</summary>
 
-##### Responses
-
-> | http code     | content-type                      | response                                                            |
-> |---------------|-----------------------------------|---------------------------------------------------------------------|
-> | `200`         | `application/pdf`                 | `example.pdf`                                                       |
-> | `204`         | `application/json`                | `{"message":"No files in queue"}`                                   |
+#### Response Examples
+##### 200
+```json
+{
+    "message": "User created successfully",
+    "user_id": 1
+}
+```
 </details>
 
 <details>
- <summary><code>POST</code> <code><b>/</b></code> <code>parsed</code>&nbsp;&nbsp;&nbsp;&nbsp;Returns parsed file</summary>
+ <summary><code>POST</code> <code>/user/{userId}/upload</code>&nbsp;&nbsp;Uploads user file and returns response</summary>
 
-##### Parameters
+#### Input
+```markdown
+The input should be sent as `form-data` with the following key-value pair:
 
-> | name             |  type     | data type      | description                          |
-> |------------------|-----------|----------------|--------------------------------------|
-> | `file`           |  optional  | binary (PDF)  | The parsed PDF file (if successful)  |
-> | `error`          |  optional  | string (JSON) | Error message (if parsing failed)    |
+- `file`: The PDF file to be uploaded.
+```
 
-##### Responses
+#### Response Examples
+##### 200
+```json
+{
+    "file_id": 1,
+    "filename": "test.pdf",
+    "message": "File uploaded successfully"
+}
+```
 
-> | http code     | content-type                      | response                                                            |
-> |---------------|-----------------------------------|---------------------------------------------------------------------|
-> | `200`         | `application/json`                | `{"message":"Upload successful"}`                                   |
+##### 413
+```json
+{
+    "error": "File size exceeds 10MB limit"
+}
+```
+
+##### 400
+
+```json
+{
+    "error": "File is required", 
+    "details": "http: no such file"
+}
+```
 </details>
-
-## Requests for client
 
 <details>
- <summary><code>POST</code> <code><b>/</b></code> <code>upload</code>&nbsp;&nbsp;&nbsp;&nbsp;Upload file</summary>
+ <summary><code>GET</code> <code>/user/{userId}/files</code>&nbsp;&nbsp;Gets user files.</summary>
 
-##### Parameters
-
-> | name             |  type     | data type      | description                          |
-> |------------------|-----------|----------------|--------------------------------------|
-> | `file`           |  required | binary (PDF)  | The PDF file                          |
-
-##### Responses
-
-> | http code     | content-type                      | response                                                            |
-> |---------------|-----------------------------------|---------------------------------------------------------------------|
-> | `200`         | `application/json`                | `{"message":"Upload successful"}`                                   |
-> | `415`         | `application/json`                | `{"message":"Only PDF files are allowed"`                           |
-> | `400`         | `application/json`                | `{"message":"No file provided"`                                     |
+#### Response Examples
+##### 200
+```json
+[
+    {
+        "upload_date": "2025-02-10 20:45:13",
+        "filename": "test.pdf",
+        "status": "in_queue"
+    }
+]
+```
 </details>
+
+<details>
+ <summary><code>DELETE</code> <code>/user/{userId}/file/{fileId}</code>&nbsp;&nbsp;Deletes file from queue.</summary>
+
+#### Response Examples
+##### 200
+```json
+[
+    {
+        "file_id": 1,
+        "message": "File deleted successfully"
+    }
+]
+```
+
+##### 500
+```json
+[
+    {
+        "status":"error",
+        "message":"Failed to delete file", 
+        "details": "Error retrieving file status: sql: no rows in result set"
+    }
+]
+```
+</details>
+
+<details>
+ <summary><code>GET</code> <code>/queue</code>&nbsp;&nbsp;Gets next file from queue and also removes it.</summary>
+
+#### Response Examples
+##### 200
+```json
+[
+    {
+        "file_id": 3,
+        "pdf_file": "file_contents"
+    }
+]
+```
+##### 404
+```json
+[
+    {
+        "status":"error",
+        "message":"Queue is empty"
+    }
+]
+```
+</details>
+
+<details>
+ <summary><code>POST</code> <code>/file/{fileId}/parsed</code>&nbsp;&nbsp;Parse server returns parsed file.</summary>
+
+#### Response Examples
+##### 200
+```json
+[
+    {
+        "message": "Parsed information uploaded successfully"
+    }
+]
+```
+</details>
+
+<details>
+ <summary><code>POST</code> <code>/user/{userId}/file/{fileId/import</code>&nbsp;&nbsp;User imports parsed file.</summary>
+
+#### Response Examples
+##### 200
+```json
+[
+    {
+        "file_id": 3,
+        "message": "File imported successfully"
+    }
+]
+```
+##### 500
+```json
+[
+    {
+        "status":"error",
+        "message":"Failed to import file", 
+        "details": "File is not in 'success' state. Cannot import."
+    }
+]
+```
+</details>
+
+## Things that could be improved upon
+- Rollback database on failed insert/delete
+- And more...

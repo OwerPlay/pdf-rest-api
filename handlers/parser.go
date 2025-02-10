@@ -15,7 +15,7 @@ func GetQueue(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Retrieve the next file in the queue
 	fileID, fileData, err := database.GetNextFileFromQueue(db)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Failed to retrieve next file"}`, http.StatusInternalServerError)
+		http.Error(w, `{"status":"error","message":"Failed to retrieve next file", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 	if fileID == 0 {
@@ -42,21 +42,21 @@ func UploadParsed(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	// Convert fileID to int
 	fileID, err := strconv.Atoi(fileIDStr)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Invalid file ID"}`, http.StatusBadRequest)
+		http.Error(w, `{"status":"error","message":"Invalid file ID", "details": "`+err.Error()+`"}`, http.StatusBadRequest)
 		return
 	}
 
 	// Read the entire file into memory
 	fileData, err := io.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Failed to read file"}`, http.StatusInternalServerError)
+		http.Error(w, `{"status":"error","message":"Failed to read file", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 
 	// Store the file in the database
 	err = database.UploadParsedFile(db, fileID, fileData)
 	if err != nil {
-		http.Error(w, `{"status":"error","message":"Database error while storing file"}`, http.StatusInternalServerError)
+		http.Error(w, `{"status":"error","message":"Database error while storing file", "details": "`+err.Error()+`"}`, http.StatusInternalServerError)
 		return
 	}
 

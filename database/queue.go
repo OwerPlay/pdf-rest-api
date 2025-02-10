@@ -1,8 +1,8 @@
 package database
 
-// TODO from this file down change returns to follow errors.New and than also handle those errors
 import (
 	"database/sql"
+	"errors"
 	"log"
 )
 
@@ -16,7 +16,7 @@ func CreateQueueTable(db *sql.DB) error {
 	);`
 	_, err := db.Exec(query)
 	if err != nil {
-		return err
+		return errors.New("Error creating QUEUE table: " + err.Error())
 	}
 
 	log.Println("QUEUE table created successfully!")
@@ -26,8 +26,7 @@ func CreateQueueTable(db *sql.DB) error {
 func AddFileToQueue(db *sql.DB, fileID int, fileData []byte) error {
 	_, err := db.Exec("INSERT INTO QUEUE (file_id, pdf_file) VALUES (?, ?)", fileID, fileData)
 	if err != nil {
-		log.Println("Error adding file to queue:", err)
-		return err
+		return errors.New("Error adding file to queue: " + err.Error())
 	}
 	log.Println("File added to queue:", fileID)
 	return nil
@@ -44,22 +43,19 @@ func GetNextFileFromQueue(db *sql.DB) (int, []byte, error) {
 			log.Println("Queue is empty.")
 			return 0, nil, nil
 		}
-		log.Println("Error fetching next file from queue:", err)
-		return 0, nil, err
+		return 0, nil, errors.New("Error fetching next file from queue: " + err.Error())
 	}
 
 	// Remove file from queue after fetching
 	_, err = db.Exec("DELETE FROM QUEUE WHERE file_id = ? LIMIT 1", fileID)
 	if err != nil {
-		log.Println("Error removing file from queue:", err)
-		return 0, nil, err
+		return 0, nil, errors.New("Error removing file from queue: " + err.Error())
 	}
 
 	// Update file status to 'parsing'
 	err = UpdateFileStatus(db, fileID, StatusParsing)
 	if err != nil {
-		log.Println("Error updating file status:", err)
-		return 0, nil, err
+		return 0, nil, errors.New("Error updating file status: " + err.Error())
 	}
 
 	log.Println("File removed from queue:", fileID)
