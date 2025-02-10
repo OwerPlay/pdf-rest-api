@@ -4,7 +4,7 @@
 ```
 APP_PORT=8080
 MYSQL_ROOT_PASSWORD=rootpassword
-MYSQL_DATABASE=pdf-rest-api-db
+MYSQL_DATABASE=mydatabase
 MYSQL_USER=myuser
 MYSQL_PASSWORD=mypassword
 ```
